@@ -24,6 +24,7 @@ public class testValueIterationBridge {
 					
 					VueGridworldValue vue = new VueGridworldValue(g,a);
 					
+					
 									
 					vue.setVisible(true);
 			

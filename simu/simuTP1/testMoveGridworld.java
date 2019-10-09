@@ -17,8 +17,9 @@ public class testMoveGridworld {
 		// cree une nouvelle tache, une instance de Runnable, qui est placee a la fin de la file de l'EDT par invokeLater(). 
         SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
+				
 	
-					GridworldMDP gmdp = GridworldMDP.getBookGrid();
+				GridworldMDP gmdp = GridworldMDP.getBridgeGrid();
  
 				GridworldEnvironnement g = new GridworldEnvironnement(gmdp);
 	
