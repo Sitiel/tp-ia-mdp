@@ -32,10 +32,10 @@ public class QLearningAgent extends RLAgent {
 	public QLearningAgent(double alpha, double gamma,
 			Environnement _env) {
 		super(alpha, gamma,_env);
+		
 		qvaleurs = new HashMap<Etat,HashMap<Action,Double>>();
-		
-		
-	
+		this.vmin = 99999999;
+		this.vmax = -99999999;
 	}
 
 
@@ -45,7 +45,6 @@ public class QLearningAgent extends RLAgent {
 	 * renvoi action(s) de plus forte(s) valeur(s) dans l'etat e
 	 *  (plusieurs actions sont renvoyees si valeurs identiques)
 	 *  renvoi liste vide si aucunes actions possibles dans l'etat (par ex. etat absorbant)
-
 	 */
 	@Override
 	public List<Action> getPolitique(Etat e) {
@@ -55,10 +54,24 @@ public class QLearningAgent extends RLAgent {
 		if (this.getActionsLegales(e).size() == 0){//etat  absorbant; impossible de le verifier via environnement
 			System.out.println("aucune action legale");
 			return new ArrayList<Action>();
-			
 		}
 		
-		//*** VOTRE CODE
+		double bestQValue = 0;
+		boolean assigned = false;
+		List<Action> actions = this.getActionsLegales(e);
+		for(Action a : actions) {
+			double qValue = this.getQValeur(e, a);
+			if(qValue > bestQValue || !assigned) {
+				assigned = true;
+				bestQValue = qValue;
+				returnactions.clear();
+				returnactions.add(a);
+			}
+			else if(qValue == bestQValue) {
+				returnactions.add(a);
+			}
+		}
+		
 		return returnactions;
 		
 		
@@ -66,15 +79,24 @@ public class QLearningAgent extends RLAgent {
 	
 	@Override
 	public double getValeur(Etat e) {
-		//*** VOTRE CODE
-		return 0.0;
-		
+		List<Action> actions = this.getActionsLegales(e);
+		double maxQ = 0;
+		boolean assigned = false;
+		for(Action a : actions) {
+			double qtmp = this.getQValeur(e, a);
+			if(qtmp > maxQ || !assigned) {
+				assigned = true;
+				maxQ = qtmp;
+			}
+		}
+		return maxQ;
 	}
 
 	@Override
 	public double getQValeur(Etat e, Action a) {
-		//*** VOTRE CODE
-		return 0;
+		if(!this.qvaleurs.containsKey(e) || !this.qvaleurs.get(e).containsKey(a))
+			return 0;
+		return this.qvaleurs.get(e).get(a);
 	}
 	
 	
@@ -82,7 +104,19 @@ public class QLearningAgent extends RLAgent {
 	@Override
 	public void setQValeur(Etat e, Action a, double d) {
 		//*** VOTRE CODE
+		if(d < this.vmin)
+			this.vmin = d;
+		if(d > this.vmax)
+			this.vmax = d;
 		
+		if(!this.qvaleurs.containsKey(e)) {
+			HashMap<Action,Double> possibleActions = new HashMap<Action,Double>();
+			for(Action ta : this.getActionsLegales(e)) {
+				possibleActions.put(ta, 0.0);
+			}
+			this.qvaleurs.put(e, possibleActions);
+		}
+		this.qvaleurs.get(e).put(a, d);
 		
 		// mise a jour vmax et vmin pour affichage du gradient de couleur:
 				//vmax est la valeur de max pour tout s de V
@@ -107,8 +141,21 @@ public class QLearningAgent extends RLAgent {
 	public void endStep(Etat e, Action a, Etat esuivant, double reward) {
 		if (RLAgent.DISPRL)
 			System.out.println("QL mise a jour etat "+e+" action "+a+" etat' "+esuivant+ " r "+reward);
-
-		//*** VOTRE CODE
+		
+		double maxQOfNextStep = 0;
+		boolean assigned = false;
+		for(Action asuivant : this.getActionsLegales(esuivant)) {
+			double qNext = this.getQValeur(esuivant, asuivant);
+			if(qNext > maxQOfNextStep || !assigned) {
+				maxQOfNextStep = qNext;
+				assigned = true;
+			}
+			
+		}
+		
+		double newQ = (1-this.alpha)*this.getQValeur(e, a) + this.alpha * (reward + this.gamma * maxQOfNextStep);
+		//System.out.println(this.qvaleurs);
+		this.setQValeur(e, a, newQ);
 	}
 
 	@Override
@@ -121,20 +168,11 @@ public class QLearningAgent extends RLAgent {
 	public void reset() {
 		super.reset();
 		//*** VOTRE CODE
+		this.vmin = 99999999;
+		this.vmax = -99999999;
+		this.qvaleurs.clear();
 		
 		this.episodeNb =0;
 		this.notifyObs();
 	}
-
-
-
-
-
-
-
-
-
-	
-
-
 }

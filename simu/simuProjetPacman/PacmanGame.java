@@ -17,7 +17,7 @@ public class PacmanGame {
 	{
 		//lecture du fichier layout et remplissage des donnees dans Maze
 		//originalClassic
-		MazePacman maze=new MazePacman("pacmanlayouts/smallGrid2.lay");
+		MazePacman maze=new MazePacman("pacmanlayouts/mediumGrid.lay");
 		//mis a jour etat du jeu
 		StateGamePacman state=new StateGamePacman(maze);
 		//creation du jeu

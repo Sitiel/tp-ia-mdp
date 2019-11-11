@@ -32,10 +32,30 @@ public class StrategyGreedy extends StrategyExploration{
 		if (this.agent.getActionsLegales(_e).isEmpty()){
 			return null;
 		}
-	
-		//VOTRE CODE ***
 		
-		return null;
+		actions = this.agent.getActionsLegales(_e);
+	
+		if(d < 1 - this.epsilon) {
+			Action bestAction = null;
+			double bestQ = 0;
+			boolean assigned = false;
+			for(Action a : actions) {
+				double qtmp = this.agent.getQValeur(_e, a);
+				if(qtmp > bestQ || !assigned) {
+					assigned = true;
+					bestQ = qtmp;
+					bestAction = a;
+				}
+				else if(qtmp == bestQ && rand.nextBoolean()) {
+					bestAction = a;
+				}
+			}
+			//System.out.println("state : " + _e + " action : " + bestAction + " -> " + bestQ);
+			return bestAction;
+		}
+		
+		
+		return actions.get(rand.nextInt(actions.size()));
 	}
 
 	public double getEpsilon() {
